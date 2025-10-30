@@ -1,0 +1,64 @@
+### POST a customer
+POST http://localhost:8080/api/v1/customers
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@gmail.com"
+}
+
+### GET a customer by id
+GET http://localhost:8080/api/v1/customers/1
+Accept: application/json
+
+### GET all customers (paginated)
+GET http://localhost:8080/api/v1/customers?page=0&size=10&sortBy=name&sortDir=asc
+Accept: application/json
+
+### POST product
+POST http://localhost:8080/api/v1/products
+Content-Type: application/json
+
+{
+  "name": "scissors",
+  "price": 5.00
+}
+
+### POST product
+POST http://localhost:8080/api/v1/products
+Content-Type: application/json
+
+{
+"name": "pen",
+"price": 2.00
+}
+
+### POST product
+POST http://localhost:8080/api/v1/products
+Content-Type: application/json
+
+{
+  "name": "pencil",
+  "price": 1.00
+}
+
+### GET a product by id
+GET http://localhost:8080/api/v1/products/2
+Accept: application/json
+
+### GET all customers (paginated)
+GET http://localhost:8080/api/v1/products?page=0&size=10&sortBy=price&sortDir=asc
+Accept: application/json
+
+### POST order
+POST http://localhost:8080/api/v1/orders
+Content-Type: application/json
+
+{
+  "productIds": [1,2,3],
+  "customerId": 1
+}
+
+### GET an order by id
+GET http://localhost:8080/api/v1/orders/1
+Accept: application/json

@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: order-processor
+  kafka:
+    bootstrap-servers: ${KAFKA_URL:localhost:9092}
+    consumer:
+      group-id: order-processor-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8082}
+        specific.avro.reader: true
+
+server:
+  port: 8081

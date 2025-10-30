@@ -1,0 +1,89 @@
+services:
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.6.0
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft settings
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      # Listener settings
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://kafka:9093,PLAINTEXT_INTERNAL://0.0.0.0:29092'
+      # Other settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Required for KRaft
+      CLUSTER_ID: 'ciWo7IWazEAeue_22w5iog=='
+    networks:
+      - order-system-network
+
+
+  schema-registry:
+    container_name: schema-registry
+    image: confluentinc/cp-schema-registry:7.6.0
+    ports:
+      - "8082:8082"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'kafka:29092'
+    depends_on:
+      - kafka
+    networks:
+      - order-system-network
+
+  db:
+    container_name: postgres
+    image: postgres:17.0-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_system
+    networks:
+      - order-system-network
+
+  order_service:
+    container_name: order_service
+    build:
+      context: ../
+      dockerfile: order-service/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/order_system
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      KAFKA_URL: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8082
+    depends_on:
+      - db
+      - kafka
+      - schema-registry
+    networks:
+      - order-system-network
+
+  order_processor:
+    container_name: order_processor
+    build:
+      context: ../
+      dockerfile: order-processor/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      KAFKA_URL: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8082
+    depends_on:
+      - kafka
+      - schema-registry
+    networks:
+      - order-system-network
+
+networks:
+  order-system-network:
+    driver: bridge
